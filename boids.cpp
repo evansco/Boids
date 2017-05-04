@@ -6,6 +6,7 @@
 using namespace std;
 using namespace sf;
 
+#define PI 3.14159265
 constexpr int minDist = 30;
 constexpr int maxVel = 10;
 constexpr int flockDist = 200;
@@ -15,20 +16,20 @@ class Boid {
 	
 public:
 		
-	Boid(int width, int height) {
+	Boid(int width, int height, Texture &texture) {
 		
 		x = rand() % width;
 		y = rand() % height;
 		xVel = rand() % maxVel;
 		yVel = rand() % maxVel;
-		shape.setRadius(10);
-		shape.setFillColor(Color::Red);
+		shape.setTexture(texture, true);
+		shape.setScale(0.75, 0.75);
 		
 	}
 	
 	int x, y;
 	double xVel, yVel;
-	CircleShape shape;
+	Sprite shape;
 	
 };
 
@@ -66,6 +67,17 @@ void moveBoids(vector<Boid> &boids) {
 		boid.x += boid.xVel;
 		boid.y += boid.yVel;
 		boid.shape.setPosition(boid.x, boid.y);
+		double angle = 0;
+		if (boid.xVel > 0 && boid.yVel > 0) {
+			angle = atan(abs(boid.yVel) / abs(boid.xVel)) * 180 / PI;
+		} else if (boid.xVel < 0 && boid.yVel > 0) {
+			angle = 180 - (atan(abs(boid.yVel) / abs(boid.xVel)) * 180 / PI);
+		} else if (boid.xVel > 0 && boid.yVel < 0) {
+			angle = -(atan(abs(boid.yVel) / abs(boid.xVel)) * 180 / PI);
+		} else if (boid.xVel < 0 && boid.yVel < 0) {
+			angle = -180 + (atan(abs(boid.yVel) / abs(boid.xVel)) * 180 / PI);
+		}
+		boid.shape.setRotation(angle);
 		
 	}
 	
@@ -183,11 +195,13 @@ int main(int argc, char** argv) {
 	unsigned int width = atoi(argv[1]);
 	unsigned int height = atoi(argv[2]);
 	int numBoids = atoi(argv[3]);
+	Texture texture;
+	texture.loadFromFile("arrow.png");
 	
 	vector<Boid> boids;
 	for (int i = 0; i < numBoids; ++i) {
 		
-		boids.push_back(Boid(width, height));
+		boids.push_back(Boid(width, height, texture));
 		
 	}
 	
